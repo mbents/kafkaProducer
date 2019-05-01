@@ -10,7 +10,7 @@ import org.apache.kafka.common.serialization.LongSerializer;
 import java.util.Properties;
 
 public class ProducerFactory {
-    public static Producer<Long, String> createProducer() {
+    public static Producer<Long, KafkaMessageDTO> createProducer() {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, IKafkaConstants.KAFKA_BROKERS);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, IKafkaConstants.CLIENT_ID);

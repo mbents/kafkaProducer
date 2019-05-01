@@ -2,12 +2,16 @@ package com.bents.kafkaProducer;
 
 import com.bents.kafkaProducer.constants.IKafkaConstants;
 import com.bents.kafkaProducer.dto.KafkaMessageDTO;
+import com.bents.kafkaProducer.factory.ProducerFactory;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.security.SecureRandom;
+import java.util.concurrent.ExecutionException;
 
 @SpringBootApplication
 public class KafkaProducerApplication implements CommandLineRunner {
@@ -21,9 +25,21 @@ public class KafkaProducerApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		KafkaMessageDTO kafkaMessageDTO = new KafkaMessageDTO();
-		kafkaMessageDTO.setMessage(getRandomString(16));
-		ProducerRecord<Long, KafkaMessageDTO> record = new ProducerRecord<>(IKafkaConstants.TOPIC_NAME, kafkaMessageDTO);
+		Producer<Long, KafkaMessageDTO> producer = ProducerFactory.createProducer();
+		for (int index = 0; index < IKafkaConstants.MESSAGE_COUNT; index++) {
+			KafkaMessageDTO kafkaMessageDTO = new KafkaMessageDTO();
+			kafkaMessageDTO.setIndex(Long.valueOf(index));
+			kafkaMessageDTO.setMessage(getRandomString(16));
+			ProducerRecord<Long, KafkaMessageDTO> record = new ProducerRecord<>(IKafkaConstants.TOPIC_NAME, kafkaMessageDTO);
+			try {
+				RecordMetadata metadata = producer.send(record).get();
+				System.out.println("Record sent with key " + index + " to partition " + metadata.partition()
+						+ " with offset " + metadata.offset());
+			} catch (ExecutionException | InterruptedException e) {
+				System.out.println("Error in sending record");
+				System.out.println(e);
+			}
+		}
 	}
 
 	private String getRandomString(int len) {
