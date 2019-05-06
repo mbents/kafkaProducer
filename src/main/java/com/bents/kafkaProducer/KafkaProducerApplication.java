@@ -11,7 +11,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.security.SecureRandom;
-import java.util.concurrent.ExecutionException;
 
 @SpringBootApplication
 public class KafkaProducerApplication implements CommandLineRunner {
@@ -35,9 +34,10 @@ public class KafkaProducerApplication implements CommandLineRunner {
 				RecordMetadata metadata = producer.send(record).get();
 				System.out.println("Record sent with key " + index + " to partition " + metadata.partition()
 						+ " with offset " + metadata.offset());
-			} catch (ExecutionException | InterruptedException e) {
+			} catch (Exception e) {
 				System.out.println("Error in sending record");
 				System.out.println(e);
+				throw e;
 			}
 		}
 	}
